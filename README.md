@@ -3,8 +3,8 @@
 
 ## Overview
 
-Often we may need to add R external libraries that are not part of standard R installation. As a user, we could add the 
-libraries in our home (or stash) directory and make the libraries available on remote machines for job executions. 
+Often we may need to add R external libraries that are not part of standard R installation. As a user, we could 
+add the libraries in our home (or stash) directory and make the libraries available on remote machines for job executions. 
 
 In this tutorial, we learn how to add `sna` package from [Stanford's R-lab](http://sna.stanford.edu/rlabs.php) and perform 
 the social network analysis as a HTCondor job on OSG Connect.  
