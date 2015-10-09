@@ -9,7 +9,7 @@ add the libraries in our home (or stash) directory and make the libraries availa
 In this tutorial, we learn how to add `sna` package from [Stanford's R-lab](http://sna.stanford.edu/rlabs.php) and perform 
 the social network analysis as a HTCondor job on OSG Connect.  
 
-![fig 1](https://raw.githubusercontent.com/OSGConnect/tutorial-R-libaddSNA/master/Figs/SocialNetworkAnalysis.png)
+![fig 1](https://raw.githubusercontent.com/OSGConnect/tutorial-R-addlibSNA/master/Figs/SocialNetworkAnalysis.png)
 
 Fig.1. An example outcome of social network analysis using the external R package `sna` from [Stanford's R-lab](http://sna.stanford.edu/rlabs.php)
 
