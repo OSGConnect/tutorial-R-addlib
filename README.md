@@ -1,4 +1,4 @@
-[title]: - "Add-on external packages to your R jobs"
+[title]: - "Adding external packages to your R jobs"
 [TOC] 
 
 ## Overview
@@ -128,7 +128,7 @@ The wrapper script takes care of executing the R job properly on the remote mach
 
 It is important to define `.libPaths()` about the location of the add-on libraries. 
 
-# Job submission 
+## Job submission 
 Now submit the job
 
     $ condor_submit sna_lab_1.submit
@@ -137,7 +137,7 @@ and check your job status
 
     $ condor_q username
 
-# Job output 
+## Job output 
 Once the job finished running, you will see the following pdf files
 
     $ ls *.pdf
