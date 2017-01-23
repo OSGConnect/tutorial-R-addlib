@@ -18,7 +18,7 @@ Fig.1. An example outcome of social network analysis using the external R packag
 
 Let us utilize the `tutorial` command. In the command prompt, type
 
-	 $ tutorial  R-libaddSNA # Copies the required files to the directory tutorial-R-libaddSNA
+	 $ tutorial R-addlibSNA # Copies the required files to the directory tutorial-R-addlibSNA
  
 This will create a directory `tutorial-R-addSNA` with the following files
 
