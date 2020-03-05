@@ -39,7 +39,7 @@ script. The contents of that file is shown below:
 
 	#!/bin/bash
 	
-	module load r/3.5.1-py2.7
+	module load r
 	Rscript --no-save hello_world.R
 
 Finally, we had the `R.submit` submit script which we used to submit the 
@@ -78,7 +78,7 @@ knows where to find our custom library directory:
 Now we can run R and check that our library location is being used (here 
 the `>` is the R-prompt):
 
-    $ module load r/3.5.1-py2.7
+    $ module load r
 	$ R
 	...
 	> .libPaths()
