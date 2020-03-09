@@ -1,158 +1,226 @@
-[title]: - "Adding external packages to your R jobs"
-[TOC] 
+[title]: - "Use External Packages in your R Jobs"
 
+[TOC]
 
 ## Overview
 
-Often we may need to add R external libraries that are not part of standard R installation. As a user, we could 
-add the libraries in our home (or stash) directory and make the libraries available on remote machines for job executions. 
+This tutorial describes how to create custom R libraries for use in jobs 
+on OSG Connect.
 
-In this tutorial, we learn how to add `sna` package from [Stanford's R-lab](http://sna.stanford.edu/rlabs.php) and perform 
-the social network analysis as a HTCondor job on OSG Connect.  
+## Background
 
-![fig 1](https://raw.githubusercontent.com/OSGConnect/tutorial-R-addlibSNA/master/Figs/SocialNetworkAnalysis.png)
+The material in this tutorial builds up on the [Run R Scripts on OSG]
+(https://support.opensciencegrid.org/support/solutions/articles/12000056217-run-r-scripts-on-osg) 
+tutorial. If you are not already familiar with how to run R jobs on 
+OSG Connect, please see that tutorial first.
 
-Fig.1. An example outcome of social network analysis using the external R package `sna` from [Stanford's R-lab](http://sna.stanford.edu/rlabs.php)
+## Use custom R libraries on OSG
 
-## Tutorial files
+Often we may need to add R external libraries that are not part of 
+the base R installation. As a user, we could add the libraries in 
+our home (or stash) directory and then compress the library to make 
+them available on remote machines for job executions.
 
-Let us utilize the `tutorial` command. In the command prompt, type
+### Setup Workflow Files
 
-	 $ tutorial R-addlibSNA # Copies the required files to the directory tutorial-R-addlibSNA
- 
-This will create a directory `tutorial-R-addSNA` with the following files
+First we'll need to create a working directory, you can either run 
+`$ tutorial R-addlib` or type the following:
 
-    setup_sna_packages.R    # Contains the list of sources to be installed for the sna related external packages. 
-    sna_R.3.2.0.tar.gz        # The tarball of the installed sna packages provided for convinience. 
-    sna_lab_1.R             # The example R program that does social network analysis
-    sna_lab_1.sh            # The wrapper script to execute the R program `sna_lab_1.sh`
-    sna_lab_1.submit        # The HTCondor job description file
-    Log/                    # Directory to store the standard error, log and output files from the HTcondor job.
+	$ mkdir tutorial-R-addlib
+	$ cd tutorial-R-addlib
 
-## How to build external packages for R under userspace
+In the previous tutorial, recall that we created the script `hello_world.R` 
+that contained the following:
 
-At first we define where to build the external R add-on libraries. We may choose a directory in our home or stash. The 
-add-on library path is defined via the shell variable `R_LIBS`. Say, you decided to built the library in the path
- `/home/username/R_libs/sna_R.3.2.0`. Type the following in your shell prompt 
+	print("Hello World!")
 
-    $ export R_LIBS="/home/username/R_libs/sna_R.3.2"
-    $ mkdir -p R_libs/sna_R.3.2 
+We also created a wrapper script called `R-wrapper.sh` to execute our R 
+script. The contents of that file is shown below:
 
-After defining the path, we are ready to go into R prompt 
+	#!/bin/bash
+	
+	module load r
+	Rscript --no-save hello_world.R
 
-    $ module load R/3.2.0
-    $ R
+Finally, we had the `R.submit` submit script which we used to submit the 
+job to OSG Connect:
 
-To see the available libraries within R  
+	universe = vanilla
+	log = R.log.$(Cluster).$(Process)
+	error = R.err.$(Cluster).$(Process)
+	output = R.out.$(Cluster).$(Process)
+	 
+	executable = R-wrapper.sh
+	transfer_input_files = hello_world.R
+	
+	request_cpus = 1
+	request_memory = 1GB
+	request_disk = 1GB
+	 
+	requirements = OSGVO_OS_STRING == "RHEL 7" && Arch == "X86_64" && HAS_MODULES == True
+	queue 1
+
+### Build external packages for R under userspace
+
+It is helpful to create a dedicated directory to install the package 
+into. This will facilitate zipping the library so it can be transported 
+with the job. Say, you decided to built the library in the path 
+`/home/username/R_libs/lubridate_R.3.5`. If it does not already exist, 
+make the necessary directory by typing the following in your shell prompt:
+
+    $ mkdir -p ~/R_libs/lubridate_R.3.5
+
+After defining the path, we set the `R_LIBS` environment variable so R 
+knows where to find our custom library directory:
+
+	$ export R_LIBS=~/R_libs/lubridate_R.3.5
+	
+Now we can run R and check that our library location is being used (here 
+the `>` is the R-prompt):
+
+    $ module load r
+	$ R
+	...
+	> .libPaths()
+	[1] "/home/user/R_libs/lubridate_R.3.5"                                                                                                                      
+		[2] "/cvmfs/connect.opensciencegrid.org/modules/packages/linux-rhel7-x86_64/gcc-6.4.0spack/r-3.5.1-eoot7bzcbxp3pwf4dxlqrssdk7clylwd/rlib/R/library"
+	
+Excellent. We can see the location listed as library path `[1]`. We can 
+also check for available libraries within R.
 
     > library()
 
-(here the `>` is the R-prompt) 
+Press `q` to close that display.
 
-If you want to install the package “XYZ”, within R do
+To install packages within R, we use the command (where “XYZ” is the name 
+of the target package):
  
-    > install.packages("XYZ", repos = "http://cran.cnr.berkeley.edu/", dependencies = TRUE)
+    > install.packages("XYZ", repos = "http://cloud.r-project.org/", dependencies = TRUE)
 
-Since we have a list of packages to be added, it is better to list them in a file and source the file 
-to R.  The following packages are listed to be installed in `setup_sna_packages.R`: 
+For this tutorial, we are going to use the `lubridate` package. To install
+lubridate, enter this command:
 
-    install.packages("igraph", repos = "http://cran.cnr.berkeley.edu/", dependencies = TRUE)
-    install.packages("magrittr", repos = "http://cran.cnr.berkeley.edu/", dependencies = TRUE)
-    install.packages("sna", repos = "http://cran.cnr.berkeley.edu/", dependencies = TRUE)
-    install.packages("igraphtosonia", repos = "http://cran.cnr.berkeley.edu/", dependencies = TRUE)
-
-Run the setup file within R. 
-
-    > source(`setup_sna_packages.R`) 
-
-the above command should install the packages in the path defined by the variable `R_LIBS`. As mentioned above 
-we set `R_LIBS` path to `/home/username/R_libs/sna_R.3.2.0` so all of them would be installed in the specified path. 
+    > install.packages("lubridate", repos="http://cloud.r-project.org/", dependencies=TRUE)
 
 
-## Prepare tarball of the add-on packages 
+### Install multiple packages at once
 
-The next step is create a tarball of san_R.3.2.0 so that we send the tarball along with the job. 
+If you have multiple packages to be added, it may be better to list each of 
+the `install.packages()` commands within a separate R script and source the 
+file to R.  For example, if we needed to install `ggplot2`, `dplyr`, and 
+`tidyr`, we can list them to be installed in a script called `setup_packages.R` 
+which would contain the following: 
 
-Exit from the R prompt. 
+    install.packages("ggplot2", repos="http://cloud.r-project.org/", dependencies = TRUE)
+    install.packages("dplyr", repos="http://cloud.r-project.org/", dependencies = TRUE)
+    install.packages("tidyr", repos="http://cloud.r-project.org/", dependencies = TRUE)
+
+Then, install all of the packages by running the setup file within R:
+
+    > source(`setup_packages.R`) 
+
+
+### Prepare a tarball of the add-on packages 
+
+Proceeding with the `lubridate` package, the next step is create a tarball of 
+the package so we can send the tarball along with the job. 
+
+Exit from the R prompt by typing:
 
     > quit()
 
-or 
+or:
 
     >q()
 
-From the shell prompt 
+In either case, be sure to say `n` when prompted to `Save workspace image? [y/n/c]:`.
 
-    $ cd /home/username/R_libs
-    $ tar -cvzf sna_R.3.2.0.tar.gz sna_R.3.2.0
+To tar the package directory, type the following at the shell prompt:
 
-Now copy the tarball to your job directory where you have R program, job wrapper script and condor job 
-description file. 
+    $ cd /home/user/R_libs
+    $ tar -cvzf lubridate_R.3.5.tar.gz lubridate_R.3.5
 
-## Porting your add-on packages 
-
-The example job description file `sna_lab_1.submit`  contains the following information
-
-    universe = vanilla
-
-    Executable = sna_lab_1.sh
-    arguments = sna_R.3.2.0.tar.gz sna_lab_1.R
-    transfer_input_files = sna_R.3.2.0.tar.gz, sna_lab_1.R
-
-    output = Log/job.out.$(Process)
-    error = Log/job.error.$(Process)
-    log = Log/job.log.$(Process)
-
-    requirements = (HAS_CVMFS_oasis_opensciencegrid_org =?= TRUE)
-
-    queue 1
+Now copy the tarball to the job directory where the R program, job wrapper script 
+and condor job description file are. 
 
 
-In the above description file, we specify that the files `sna_R.3.2.0.tar.gz` and `sna_lab_1.R` are transferred along with the job to the remote worker machine. Also the name of these two files are passed as arguments. 
+### Use the packages in your OSG job
 
-## Define the libPaths() in the wrapper script
+Now, let's change the `hello_world` job to use the new package. First, modify the 
+`hello_world.R` R script by adding the following lines:
 
-The wrapper script takes care of executing the R job properly on the remote machine. The wrapper script `sna_lab_1.sh`
+	library(lubridate)
+	print(today())
+	
+This will add a print out of the local date to the output of the job. 
 
- module load libgfortran
- module load R/3.2.0
- tar -xzf $1
- rlocal_lib="$PWD/sna_R.3.2.0"
- export R_LIBS=$rlocal_lib
- Rscript -e ".libPaths(c(.libPaths(), '$rlocal_lib')); source('$2')"
 
-    #!/bin/bash                # Sets up the bash shell environment
-    module load libgfortran    # Load ligfortran module (R requires libgfortran library)
-    module load R/3.2.0        # Loads the R/3.2.0 module
-    tar -xzf $1                # Uncompress the tarball file (first argument defined in sna_lab_1.submit`)
-    rlocal_lib="$PWD/sna_R.3.2.0" # Information about the location of add-on libraries
-    Rscript -e ".libPaths(c(.libPaths(), '$rlocal_lib')); source('$2')"   # Set up `.libPaths and run the R program `sub_lab_1.R` which is second argument defined in sna_lab_1.submit) 
+### Define the libPaths() in the wrapper script
 
-It is important to define `.libPaths()` about the location of the add-on libraries. 
+R library locations are set upon launch and can be modified using the `R_LIBS` 
+environmental variable. To set this correctly, we need to modify the wrapper script. 
+Change the file `R-wrapper.sh` so it matches the following:
 
-## Job submission 
-Now submit the job
+	#!/bin/bash
 
-    $ condor_submit sna_lab_1.submit
+	module load r
+	
+	# Uncompress the tarball
+	tar -xzf lubridate_R.3.5.tar.gz
+	
+	# Set the library location
+	export R_LIBS="$PWD/lubridate_R.3.5"
+	
+	# run the R program
+	Rscript --no-save hello_world.R
 
-and check your job status
+
+Once you have edited the file, make the wrapper script executable and test 
+it by using the commands below:
+
+	$ chmod +x R-wrapper.sh
+	$ ./R-wrapper.sh
+	[1] "Hello World!"
+
+
+Next, we need to modify the submit script so that the package tarball is 
+transferred correctly with the job. Change the submit script `R.submit` so that 
+`transfer_input_files` and `arguments` are set correctly. The completed file, 
+which can bee seen in `R.submit` should look like below:
+
+	universe = vanilla
+	log = R.log.$(Cluster).$(Process)
+	error = R.err.$(Cluster).$(Process)
+	output = R.out.$(Cluster).$(Process)
+
+	executable = R-wrapper.sh
+	transfer_input_files = lubridate_R.3.5.tar.gz, hello_world.R
+	
+	request_cpus = 1
+	request_memory = 1GB
+	request_disk = 1GB
+
+	requirements = OSGVO_OS_STRING == "RHEL 7" && Arch == "X86_64" && HAS_MODULES == True
+	queue 1
+
+
+### Job submission and output
+
+Now we are ready to submit the job:
+
+    $ condor_submit R.submit
+
+and check the job status:
 
     $ condor_q username
 
-## Job output 
-Once the job finished running, you will see the following pdf files
+Once the job finished running, check the output files as before. They should now look like this:
 
-    $ ls *.pdf
-    1.1_Krackhardt_Full.pdf
-    1.2_Krackhardt_Advice.pdf
-    1.3_Krackhardt_Friendship.pdf
-    1.4_Krackhardt_Reports.pdf
-    1.5_Krackhardt_Reports_Fruchterman_Reingold.pdf
-    1.6_Krackhardt_Reports_Color.pdf
-    1.7_Krackhardt_Reports_Vertex_Size.pdf
-    1.8_Krackhardt_Overlayed_Ties.pdf
-    1.9_Krackhardt_Overlayed_Structure.pdf
+	$ cat R.out.3796676.0
+	[1] "2019-05-13"
+	[1] "Hello World!"
+
 
 ## Getting Help
 
-For assistance or questions, please email the OSG User Support team  at [support@opensciencegrid.org](mailto:support@opensciencegrid.org) or visit the [help desk and community forums](http://support.opensciencegrid.org).
+For assistance or questions, please email the OSG User Support team  at <mailto:support@osgconnect.net> or visit the [help desk and community forums](http://support.opensciencegrid.org).
