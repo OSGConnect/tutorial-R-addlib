@@ -59,6 +59,7 @@ job to OSG Connect:
 	 
 	queue 1
 
+
 ## Create a Directory for Packages
 
 It is helpful to create a dedicated directory to install the package 
@@ -115,7 +116,7 @@ lubridate, enter this command:
 
     > install.packages("lubridate", repos="http://cloud.r-project.org/", dependencies=TRUE)
 
-## Prepare a tarball of the add-on packages 
+## Turn Package Directory Into a tar.gz File
 
 Proceeding with the `lubridate` package, the next step is create a tarball of 
 the package so we can send the tarball along with the job. 
@@ -167,7 +168,7 @@ Change the file `R-wrapper.sh` so it matches the following:
 	# run the R program
 	Rscript hello_world.R
 
-### Include Packages in the Submit File
+## Include Packages in the Submit File
 
 Next, we need to modify the submit script so that the package tarball is 
 transferred correctly with the job. Change the submit script `R.submit` so that 
