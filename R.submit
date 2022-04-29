@@ -3,13 +3,13 @@ log = R.log.$(Cluster).$(Process)
 error = R.err.$(Cluster).$(Process)
 output = R.out.$(Cluster).$(Process)
 
++SingularityImage = "/cvmfs/singularity.opensciencegrid.org/opensciencegrid/osgvo-r:3.5.0" 
 executable = R-wrapper.sh
-transfer_input_files = hello_world.R
+transfer_input_files = R-packages.tar.gz, hello_world.R
 
 request_cpus = 1
 request_memory = 1GB
 request_disk = 1GB
 
-requirements = OSGVO_OS_STRING == "RHEL 7" && Arch == "X86_64" && HAS_MODULES == True
 queue 1
 
