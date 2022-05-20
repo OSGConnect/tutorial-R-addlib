@@ -209,7 +209,15 @@ and check the job status:
 Once the job finished running, check the output files as before. They should now look like this:
 
 	$ cat R.out.0000.0
-	
+	 ----- 
+	Hello World! 
+	 ------ 
+		\   ^__^ 
+		 \  (oo)\ ________ 
+			(__)\         )\ /\ 
+				 ||------w|
+				 ||      ||
+
 
 # Variations on This Process
 
