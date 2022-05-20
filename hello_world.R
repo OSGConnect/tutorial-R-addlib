@@ -1,4 +1,3 @@
-library(lubridate)
+library(cowsay)
 
-print(today())
-print("Hello World!")
+say("Hello World!", "cow")
