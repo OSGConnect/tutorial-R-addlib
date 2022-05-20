@@ -39,6 +39,10 @@ script. The contents of that file is shown below:
 
 	#!/bin/bash
 	
+	# create a tmp directory
+	mkdir rtmp
+	export TMPDIR=$_CONDOR_SCRATCH_DIR/rtmp
+	
 	Rscript hello_world.R
 
 Finally, we had the `R.submit` submit script which we used to submit the 
@@ -69,36 +73,38 @@ the current folder. If it does not already exist,
 make the necessary directory by typing the following in your shell prompt:
 
     $ mkdir -p R-packages
-
-After defining the path, we set the `R_LIBS` environment variable so R 
-knows where to find our custom library directory:
-
-	$ export R_LIBS=$PWD/R-packages
 	
 ## Start an R Container and Install Packages
 
 Start an R container by running: 
 
 	$ singularity shell \
-            --home $PWD:/srv \
-            --pwd /srv \
-            --bind /cvmfs \
-            --scratch /var/tmp \
-            --scratch /tmp \
-            --contain --ipc --pid \
             /cvmfs/singularity.opensciencegrid.org/opensciencegrid/osgvo-r:3.5.0
 
 > ### Other Supported R Versions
 > 
 > To see a list of all Singularity containers containing R, look at the 
 > list of [OSPool Supported Containers](https://support.opensciencegrid.org/support/solutions/articles/12000073449-view-existing-ospool-supported-containers)
-	
+
+Before starting to run R, set the `R_LIBS` environment variable so R 
+knows where to find our custom library directory:
+
+	$ export R_LIBS=$PWD/R-packages
+
+We also need to set the `TMPDIR` variable so that R has a place 
+to download any intermediate or temporary package files. 
+
+	$ export TMPDIR=$PWD
+
 Now we can run R and check that our library location is being used (here 
 the `>` is the R-prompt):
 
 	Singularity osgvo-r:3.5.0:~> R
 	> .libPaths()
-	
+	[1] "/home/alice/tutorial-R-addlib/R-packages"
+	[2] "/usr/lib64/R/library"                     
+	[3] "/usr/share/R/library"
+
 We should be able to see our `R-packages` path in `[1]`. We can 
 also check for available libraries within R.
 
@@ -114,11 +120,11 @@ of the target package):
 For this tutorial, we are going to use the `lubridate` package. To install
 lubridate, enter this command:
 
-    > install.packages("lubridate", repos="http://cloud.r-project.org/", dependencies=TRUE)
+    > install.packages("cowsay", repos="http://cloud.r-project.org/")
 
 ## Turn Package Directory Into a tar.gz File
 
-Proceeding with the `lubridate` package, the next step is create a tarball of 
+Proceeding with the `cowsay` package, the next step is create a tarball of 
 the package so we can send the tarball along with the job. 
 
 Exit from the R prompt by typing:
@@ -142,12 +148,11 @@ To tar the package directory, type the following at the shell prompt:
 ## Use Packages in an R Script
 
 Now, let's change the `hello_world` job to use the new package. First, modify the 
-`hello_world.R` R script by adding the following lines:
+`hello_world.R` R script by adding and changing the following lines:
 
-	library(lubridate)
-	print(today())
+	library(cowsay)
 	
-This will add a print out of the local date to the output of the job. 
+	say("Hello World!", "cow")	
 
 ## Define Packages in the Executable
 
@@ -203,9 +208,8 @@ and check the job status:
 
 Once the job finished running, check the output files as before. They should now look like this:
 
-	$ cat R.out.3796676.0
-	[1] "2019-05-13"
-	[1] "Hello World!"
+	$ cat R.out.0000.0
+	
 
 # Variations on This Process
 
