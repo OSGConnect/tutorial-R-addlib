@@ -9,8 +9,8 @@ on OSG Connect.
 
 # Background
 
-The material in this tutorial builds up on the [Run R Scripts on OSG]
-(https://support.opensciencegrid.org/support/solutions/articles/12000056217-run-r-scripts-on-osg) 
+The material in this tutorial builds upon the 
+[Run R Scripts on OSG](https://support.opensciencegrid.org/support/solutions/articles/12000056217-run-r-scripts-on-osg) 
 tutorial. If you are not already familiar with how to run R jobs on 
 OSG Connect, please see that tutorial first.
 
