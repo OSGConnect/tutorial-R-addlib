@@ -78,8 +78,7 @@ make the necessary directory by typing the following in your shell prompt:
 
 Start an R container by running: 
 
-	$ singularity shell \
-            /cvmfs/singularity.opensciencegrid.org/opensciencegrid/osgvo-r:3.5.0
+	$ singularity shell /cvmfs/singularity.opensciencegrid.org/opensciencegrid/osgvo-r:3.5.0
 
 > ### Other Supported R Versions
 > 
