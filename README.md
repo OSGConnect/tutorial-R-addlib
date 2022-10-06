@@ -1,8 +1,9 @@
-[title]: - "Use External Packages in your R Jobs"
+---
+ospool:
+    path: software_examples/r/tutorial-R-addlibSNA/README.md
+---
 
-[TOC]
-
-# Overview
+# Use External Packages in your R Jobs
 
 This tutorial describes how to create custom R libraries for use in jobs 
 on OSG Connect.
