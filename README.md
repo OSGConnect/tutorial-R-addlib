@@ -240,4 +240,4 @@ Then, install all of the packages by running the setup file within R:
 
 # Getting Help
 
-For assistance or questions, please email the OSG User Support team  at <mailto:support@opensciencegrid.org>.
+For assistance or questions, please email the OSG User Support team at <mailto:support@osg-htc.org>.
