@@ -120,6 +120,12 @@ Our submit file, `R.submit` should then look like this:
 Change the `osdf://` link in the submit file to be right for YOUR Access Point and 
 username, if you are using your own container file. 
 
+> **Reminder:** Files placed in the OSDF can be copied to other data spaces ("caches") 
+> where they are NOT UPDATED. If you make a new container to use with your jobs, 
+> make sure to give it a different name or put it at a different path than the 
+> previous container. You will not be able to replace the exact path of the existing 
+> container. 
+
 ## Submit Jobs and Review Output
 
 Now we are ready to submit the job:
