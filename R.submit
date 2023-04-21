@@ -1,15 +1,15 @@
-universe = vanilla
-log = R.log.$(Cluster).$(Process)
-error = R.err.$(Cluster).$(Process)
++SingularityImage = "osdf://osgconnect/osg/tutorial-R-addlib/cowsay-test.sif"
+executable        = hello_world.R
+# arguments
+
+log    = R.log.$(Cluster).$(Process)
+error  = R.err.$(Cluster).$(Process)
 output = R.out.$(Cluster).$(Process)
 
-+SingularityImage = "/cvmfs/singularity.opensciencegrid.org/opensciencegrid/osgvo-r:3.5.0" 
-executable = R-wrapper.sh
-transfer_input_files = R-packages.tar.gz, hello_world.R
++JobDurationCategory = "Medium"
 
-request_cpus = 1
+request_cpus   = 1
 request_memory = 1GB
-request_disk = 1GB
+request_disk   = 1GB
 
 queue 1
-

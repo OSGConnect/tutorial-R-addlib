@@ -3,26 +3,22 @@ ospool:
     path: software_examples/r/tutorial-R-addlibSNA/README.md
 ---
 
-# Use External Packages in your R Jobs
+# Use R Packages in your R Jobs
 
+
+Often we may need to add R external libraries that are not part of 
+the base R installation.
 This tutorial describes how to create custom R libraries for use in jobs 
 on the OSPool.
 
-# Background
+## Background
 
 The material in this tutorial builds upon the 
-[Run R Scripts on OSG](https://support.opensciencegrid.org/support/solutions/articles/12000056217-run-r-scripts-on-osg) 
+[Run R Scripts on the OSPool]() 
 tutorial. If you are not already familiar with how to run R jobs on 
-the OSPool, please see that tutorial first.
+the OSPool, please see that tutorial first for a general introduction. 
 
-# Use custom R libraries on OSG
-
-Often we may need to add R external libraries that are not part of 
-the base R installation. As a user, we could add the libraries in 
-our home (or stash) directory and then compress the library to make 
-them available on remote machines for job executions.
-
-## Setup Workflow Files
+## Setup Directory and R Script
 
 First we'll need to create a working directory, you can either run 
 `$ git clone https://github.com/OSGConnect/tutorial-R-addlib` or type the following:
@@ -30,171 +26,99 @@ First we'll need to create a working directory, you can either run
 	$ mkdir tutorial-R-addlib
 	$ cd tutorial-R-addlib
 
-In the previous tutorial, recall that we created the script `hello_world.R` 
-that contained the following:
-
-	print("Hello World!")
-
-We also created a wrapper script called `R-wrapper.sh` to execute our R 
-script. The contents of that file is shown below:
-
-	#!/bin/bash
+Similar to the general R tutorial, we will create a script to use as a test 
+example. If you did not clone the tutorial, create a script called 
+`hello_world.R` that contains the following:
 	
-	# create a tmp directory
-	mkdir rtmp
-	export TMPDIR=$_CONDOR_SCRATCH_DIR/rtmp
-	
-	Rscript hello_world.R
-
-Finally, we had the `R.submit` submit script which we used to submit the 
-job to OSG Connect:
-
-	universe = vanilla
-	log = R.log.$(Cluster).$(Process)
-	error = R.err.$(Cluster).$(Process)
-	output = R.out.$(Cluster).$(Process)
-	
-	+SingularityImage = "/cvmfs/singularity.opensciencegrid.org/opensciencegrid/osgvo-r:3.5.0" 
-	executable = R-wrapper.sh
-	transfer_input_files = hello_world.R
-	
-	request_cpus = 1
-	request_memory = 1GB
-	request_disk = 1GB
-	 
-	queue 1
-
-
-## Create a Directory for Packages
-
-It is helpful to create a dedicated directory to install the package 
-into. This will facilitate zipping the library so it can be transported 
-with the job. Say, you decided to build the library in `R-packages` in 
-the current folder. If it does not already exist, 
-make the necessary directory by typing the following in your shell prompt:
-
-    $ mkdir -p R-packages
-	
-## Start an R Container and Install Packages
-
-Start an R container by running: 
-
-	$ singularity shell /cvmfs/singularity.opensciencegrid.org/opensciencegrid/osgvo-r:3.5.0
-
-> ### Other Supported R Versions
-> 
-> To see a list of all Singularity containers containing R, look at the 
-> list of [OSPool Supported Containers](https://support.opensciencegrid.org/support/solutions/articles/12000073449-view-existing-ospool-supported-containers)
-
-Before starting to run R, set the `R_LIBS` environment variable so R 
-knows where to find our custom library directory:
-
-	$ export R_LIBS=$PWD/R-packages
-
-We also need to set the `TMPDIR` variable so that R has a place 
-to download any intermediate or temporary package files. 
-
-	$ export TMPDIR=$PWD
-
-Now we can run R and check that our library location is being used (here 
-the `>` is the R-prompt):
-
-	Singularity osgvo-r:3.5.0:~> R
-	> .libPaths()
-	[1] "/home/alice/tutorial-R-addlib/R-packages"
-	[2] "/usr/lib64/R/library"                     
-	[3] "/usr/share/R/library"
-
-We should be able to see our `R-packages` path in `[1]`. We can 
-also check for available libraries within R.
-
-    > library()
-
-Press `q` to close that display.
-
-To install packages within R, we use the command (where “XYZ” is the name 
-of the target package):
- 
-    > install.packages("XYZ", repos = "http://cloud.r-project.org/", dependencies = TRUE)
-
-For this tutorial, we are going to use the `lubridate` package. To install
-lubridate, enter this command:
-
-    > install.packages("cowsay", repos="http://cloud.r-project.org/")
-
-## Turn Package Directory Into a tar.gz File
-
-Proceeding with the `cowsay` package, the next step is create a tarball of 
-the package so we can send the tarball along with the job. 
-
-Exit from the R prompt by typing:
-
-    > quit()
-
-or:
-
-    >q()
-
-In either case, be sure to say `n` when prompted to `Save workspace image? [y/n/c]:`.
-And then exit out of the container by typing "exit": 
-
-	Singularity osgvo-r:3.5.0:~> exit
-	$ 
-
-To tar the package directory, type the following at the shell prompt:
-
-    $ tar -czf R-packages.tar.gz R-packages/
-
-## Use Packages in an R Script
-
-Now, let's change the `hello_world` job to use the new package. First, modify the 
-`hello_world.R` R script by adding and changing the following lines:
+	#!/usr/bin/env Rscript
 
 	library(cowsay)
-	
-	say("Hello World!", "cow")	
 
-## Define Packages in the Executable
+	say("Hello World!", "cow")
 
-R library locations are set upon launch and can be modified using the `R_LIBS` 
-environmental variable. To set this correctly, we need to modify the wrapper script. 
-Change the file `R-wrapper.sh` so it matches the following:
+We will run one more command that makes the script *executable*, meaning that it 
+can be run directly from the command line: 
 
-	#!/bin/bash
-	
-	# Uncompress the tarball
-	tar -xzf R-packages.tar.gz
-	
-	# Set the library location
-	export R_LIBS="$PWD/R-packages"
-	# set TMPDIR variable
-	export TMPDIR=$_CONDOR_SCRATCH_DIR
-	
-	# run the R program
-	Rscript hello_world.R
+	$ chmod +x hello_world.R
 
-## Include Packages in the Submit File
+## Create a Custom Container with R Packages
 
-Next, we need to modify the submit script so that the package tarball is 
-transferred correctly with the job. Change the submit script `R.submit` so that 
-`transfer_input_files` and `arguments` are set correctly. The completed file, 
-which can bee seen in `R.submit` should look like below:
+Using the same container that we used for the general R tutorial, we will 
+add the package we want to use (in this case, the `cowsay` package) to create 
+a *new* container that we can use for our jobs. 
 
-	universe = vanilla
-	log = R.log.$(Cluster).$(Process)
-	error = R.err.$(Cluster).$(Process)
+The new container will be generated from a "definition" file. If it isn't already 
+present, create a file called `cowsay.def` that has the following lines: 
+
+	Bootstrap: docker
+	From: opensciencegrid/osgvo-r:3.5.0
+
+	%post
+		R -e "install.packages('cowsay', dependencies=TRUE, repos='http://cran.rstudio.com/')"
+
+This file basically says that we want to start with one of the existing OSPool R 
+containers and add the `cowsay` package from CRAN. 
+
+To create the new container, set the following variables: 
+
+	$ export TMPDIR=$HOME
+	$ export APPTAINER_CACHE_DIR=$HOME
+
+And then run this command: 
+
+	apptainer build cowsay-test.sif cowsay.def
+
+It may take 5-10 minutes to run. Once complete, if you run `ls`, you should see a 
+file in your current directory called `cowsay-test.sif`. This is the new container. 
+
+> Building containers can be a new skill and slightly different for different 
+> packages! We recommend looking at our container guides and container training 
+> materials to learn more -- these are both linked from our main guides page. 
+> There are also some additional tips at the end of this tutorial on building 
+> containers with R packages. 
+
+## Test Custom Container and R Script
+
+Start the container you created by running: 
+
+	$ apptainer shell cowsay-test.sif
+
+Now we can test our R script: 
+
+	Singularity :~/tutorial-R-addlib> ./hello_world.R
+
+If this works, we will have a message with a cow printed to our terminal. Once we have this output, we'll exit the container for now with `exit`: 
+
+	Singularity :~/tutorial-R-addlib>  exit
+	$ 
+
+##  Build the HTCondor Job
+
+For this job, we want to use the custom container we just created. For 
+efficiency,  it is best to transfer this to the job using the [OSDF](). 
+If you want to use the container you just built, copy it to the appropriate 
+directory listed here, based on which Access Point you are using. 
+
+Our submit file, `R.submit` should then look like this: 
+
+	+SingularityImage = "osdf://osgconnect/osg/tutorial-R-addlib/cowsay-test.sif"
+	executable        = hello_world.R
+	# arguments
+
+	log    = R.log.$(Cluster).$(Process)
+	error  = R.err.$(Cluster).$(Process)
 	output = R.out.$(Cluster).$(Process)
 
-	+SingularityImage = "/cvmfs/singularity.opensciencegrid.org/opensciencegrid/osgvo-r:3.5.0" 
-	executable = R-wrapper.sh
-	transfer_input_files = R-packages.tar.gz, hello_world.R
-	
-	request_cpus = 1
+	+JobDurationCategory = "Medium"
+
+	request_cpus   = 1
 	request_memory = 1GB
-	request_disk = 1GB
+	request_disk   = 1GB
 
 	queue 1
 
+Change the `osdf://` link in the submit file to be right for YOUR Access Point and 
+username, if you are using your own container file. 
 
 ## Submit Jobs and Review Output
 
@@ -206,7 +130,7 @@ and check the job status:
 
     $ condor_q
 
-Once the job finished running, check the output files as before. They should now look like this:
+Once the job finished running, check the output file as before. They should look like this:
 
 	$ cat R.out.0000.0
 	 ----- 
@@ -219,25 +143,50 @@ Once the job finished running, check the output files as before. They should now
 				 ||      ||
 
 
-# Variations on This Process
+## Tips for Building Containers with R Packages
 
-## Install multiple packages at once
+There is a lot of variety in how to build custom containers! The two main decisions
+you need to make are a) what to use as your "base" or starting container and what 
+packages to install. 
 
-If you have multiple packages to be added, it may be better to list each of 
-the `install.packages()` commands within a separate R script and source the 
-file to R.  For example, if we needed to install `ggplot2`, `dplyr`, and 
-`tidyr`, we can list them to be installed in a script called `setup_packages.R` 
-which would contain the following: 
+### Base Containers
 
-    install.packages("ggplot2", repos="http://cloud.r-project.org/", dependencies = TRUE)
-    install.packages("dplyr", repos="http://cloud.r-project.org/", dependencies = TRUE)
-    install.packages("tidyr", repos="http://cloud.r-project.org/", dependencies = TRUE)
+In this guide we used one of the existing OSPool R containers. You 
+can see the other versions of R that we support on our list of [OSPool Supported Containers]()
 
-Then, install all of the packages by running the setup file within R:
+Another good option for a base container are the "rocker" Docker containers: 
+[Rocker on DockerHub](https://hub.docker.com/u/rocker)
 
-    > source(`setup_packages.R`) 
+To use a different container as the base container, you just change the top of 
+the definition file. So to use the [rocker tidyverse container](https://hub.docker.com/r/rocker/tidyverse) as my starting point, I would 
+have a definition file header like this:
 
+	Bootstrap: docker
+	From: rocker/tidyverse:4.1.3
 
-# Getting Help
+When using containers from DockerHub, it's a good idea to pick a version (look at 
+the "Tags" tab for options). Above, this container would be version `4.1.3` of R. 
 
-For assistance or questions, please email the OSG User Support team at <mailto:support@osg-htc.org>.
+### Installing Packages
+
+The sample definition file from this tutorial installed one package. If you have 
+multiple packages, you can change the "install.packages" command to install 
+multiple packages: 
+
+	%post
+ 	  R -e "install.packages(c('cowsay','here'), dependencies=TRUE, repos='http://cran.rstudio.com/')"
+
+*If your base container is one of the "rocker" containers*, you can use a different
+tool to install packages that looks like this: 
+
+	%post
+ 	  install2.r cowsay
+
+or for multiple packages: 
+
+	%post
+ 	  install2.r cowsay here
+
+Remember, you only need to install packages that aren't already in the container. If 
+you start with the tidyverse container, you don't need to install `ggplot2` or `dplyr` - 
+those are already in the container and you would be adding packages on top. 
