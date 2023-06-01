@@ -5,7 +5,6 @@ ospool:
 
 # Use R Packages in your R Jobs
 
-
 Often we may need to add R external libraries that are not part of 
 the base R installation.
 This tutorial describes how to create custom R libraries for use in jobs 
@@ -14,7 +13,7 @@ on the OSPool.
 ## Background
 
 The material in this tutorial builds upon the 
-[Run R Scripts on the OSPool]() 
+[Run R Scripts on the OSPool](https://portal.osg-htc.org/documentation/software_examples/r/tutorial-R/) 
 tutorial. If you are not already familiar with how to run R jobs on 
 the OSPool, please see that tutorial first for a general introduction. 
 
@@ -101,7 +100,7 @@ directory listed here, based on which Access Point you are using.
 
 Our submit file, `R.submit` should then look like this: 
 
-	+SingularityImage = "osdf://osgconnect/osg/tutorial-R-addlib/cowsay-test.sif"
+	+SingularityImage = "osdf://osgconnect/public/osg/tutorial-R-addlib/cowsay-test.sif"
 	executable        = hello_world.R
 	# arguments
 
@@ -154,6 +153,9 @@ Once the job finished running, check the output file as before. They should look
 There is a lot of variety in how to build custom containers! The two main decisions
 you need to make are a) what to use as your "base" or starting container and what 
 packages to install. 
+
+There is a useful overview of building containers from our container training, 
+linked on our [training page](https://portal.osg-htc.org/documentation/support_and_training/training/osgusertraining/).
 
 ### Base Containers
 
