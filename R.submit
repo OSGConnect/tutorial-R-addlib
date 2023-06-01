@@ -1,4 +1,4 @@
-+SingularityImage = "osdf://osgconnect/osg/tutorial-R-addlib/cowsay-test.sif"
++SingularityImage = "osdf://osgconnect/public/osg/tutorial-R-addlib/cowsay-test.sif"
 executable        = hello_world.R
 # arguments
 
