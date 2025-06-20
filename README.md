@@ -100,7 +100,7 @@ directory listed here, based on which Access Point you are using.
 
 Our submit file, `R.submit` should then look like this: 
 
-	+SingularityImage = "osdf://osgconnect/public/osg/tutorial-R-addlib/cowsay-test.sif"
+	container_image = osdf://osgconnect/public/osg/tutorial-R-addlib/cowsay-test.sif
 	executable        = hello_world.R
 	# arguments
 
