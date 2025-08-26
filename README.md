@@ -60,8 +60,10 @@ containers and add the `cowsay` package from CRAN.
 
 To create the new container, set the following variables: 
 
-	$ export TMPDIR=$HOME
-	$ export APPTAINER_CACHE_DIR=$HOME
+	$ mkdir -p $HOME/tmp
+	$ export TMPDIR=$HOME/tmp
+	$ export APPTAINER_TMPDIR=$HOME/tmp
+	$ export APPTAINER_CACHEDIR=$HOME/tmp
 
 And then run this command: 
 
